@@ -10,10 +10,14 @@ module.exports =
     subscriptions = new CompositeDisposable()
     subscriptions.add atom.workspace.observeTextEditors (editor) ->
       editors[editor.getPath()] = editor
-      subscriptions.add editor.onDidStopChanging ->
+      editorSubscriptions = new CompositeDisposable()
+      editorSubscriptions.add editor.onDidStopChanging ->
         checkMergeConflicts()
-      subscriptions.add editor.onDidChangePath ->
+      editorSubscriptions.add editor.onDidChangePath ->
         editors[editor.getPath()] = editor
+      editorSubscriptions.add editor.onDidDestroy ->
+        delete editors[editor.getPath()]
+        editorSubscriptions.dispose()
 
     checkMergeConflicts()
 
