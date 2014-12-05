@@ -21,12 +21,13 @@ checkForConflicts = ->
 
 modes =
   1: (merge, line) ->
+    merge.current or= {head: [], lines: {}, pos: 0, content: []}
     if line.indexOf("@@") is 0
       @[2](merge, line)
     else
-      merge.current or= {head: [], lines: {}, pos: 0, content: []}
       merge.current.head.push line
       1
+
   # @@ -1,4 +1,8 @@
   2: (merge, line) ->
     match = line.match /@@ -(\d+)(,(\d+))? \+(\d+)(,(\d+))? @@/
@@ -37,24 +38,25 @@ modes =
       minus: {lower: parseInt(match[1] or 0), upper: parseInt(match[3]) or 0}
       plus: {lower: parseInt(match[4] or 0), upper: parseInt(match[6]) or 0}
     3
+
   3: (merge, line) ->
     merge.current.content.push line
     merge.current.pos += 1
     if merge.current.pos >= merge.current.lines.plus.upper
-      merge.hunks.push finishMergeHunk(merge.current)
+      merge.files.push finishMergeFile(merge.current)
       merge.current = null
       1
     else
       3
 
 parseMergeTree = (text) ->
-  merge = {hunks: []}
+  merge = {files: []}
   mode = 1
   for line in text.split "\n"
     mode = modes[mode](merge, line)
   finishMergeTree merge
 
-hunkModes =
+fileModes =
   1: (conflicted, lineNum, line) ->
     if line.indexOf("+<<<<<<<") is 0
       return 2
@@ -69,29 +71,29 @@ hunkModes =
       return 1
     3
 
-finishMergeHunk = (hunk) ->
-  hunk.head = hunk.head.join("\n")
-  hunk.content = hunk.content.join("\n")
+finishMergeFile = (file) ->
+  file.head = file.head.join("\n")
+  file.content = file.content.join("\n")
   mode = 1
-  lineNum = hunk.lines.minus.lower
+  lineNum = file.lines.minus.lower
   conflicted = []
-  for line in hunk.content.split "\n"
+  for line in file.content.split "\n"
     console.log mode, lineNum, line
-    nextMode = hunkModes[mode](conflicted, lineNum, line)
+    nextMode = fileModes[mode](conflicted, lineNum, line)
     if mode != nextMode
       mode = nextMode
     else
       lineNum = lineNum + 1
-  hunk.conflicted = conflicted
-  hunk
+  file.conflicted = conflicted
+  file
 
 finishMergeTree = (merge) ->
   delete merge.current
-  for entry in merge.hunks
-    lines = entry.head.split('\n')
+  for file in merge.files
+    lines = file.head.split('\n')
     segments = lines[lines.length - 1].split(' ')
     name = segments[segments.length - 1]
     conflict =
-      conflicted: entry.conflicted
+      conflicted: file.conflicted
       path: path.join(repo.getWorkingDirectory(), name)
     @emit('merge-conflict', conflict)

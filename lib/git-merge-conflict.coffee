@@ -42,12 +42,13 @@ module.exports = GitMergeConflict =
 
 modes =
   1: (merge, line) ->
+    merge.current or= {head: [], lines: {}, pos: 0, content: []}
     if line.startsWith "@@"
       @[2](merge, line)
     else
-      merge.current or= {head: [], lines: {}, pos: 0, content: []}
       merge.current.head.push line
       1
+
   # @@ -1,4 +1,8 @@
   2: (merge, line) ->
     match = line.match /@@ -(\d+)(,(\d+))? \+(\d+)(,(\d+))? @@/
@@ -58,6 +59,7 @@ modes =
       minus: {lower: parseInt(match[1] or 0), upper: parseInt(match[3]) or 0}
       plus: {lower: parseInt(match[4] or 0), upper: parseInt(match[6]) or 0}
     3
+
   3: (merge, line) ->
     merge.current.content.push line
     merge.current.pos += 1
