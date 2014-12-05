@@ -12,5 +12,6 @@
     "atom": ">0.50.0"
   },
   "dependencies": {
+    "nodegit": "0.2.3"
   }
 }
