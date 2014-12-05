@@ -1,17 +1,15 @@
 {
   "name": "git-merge-conflict",
-  "main": "./lib/git-merge-conflict",
+  "main": "./lib/main",
   "version": "0.0.0",
   "description": "A short description of your package",
-  "activationCommands": {
-    "atom-workspace": "git-merge-conflict:toggle"
-  },
   "repository": "https://github.com/atom/git-merge-conflict",
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"
   },
   "dependencies": {
-    "nodegit": "0.2.3"
+    "nodegit": "0.2.3",
+     "git-utils": "^2.1.5"
   }
 }
