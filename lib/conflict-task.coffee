@@ -3,19 +3,22 @@ path   = require 'path'
 Git    = require 'git-utils'
 MergeParser = require 'git-merge-parser'
 
-repo = null
+DEFAULT_BRANCH = "master"
 
 module.exports = (projectPath) ->
   @async()
   if repo = Git.open(projectPath)
     process.on 'message', (message) ->
-      checkForConflicts() if message is 'check-for-conflicts'
+      checkForConflicts(repo) if message is 'check-for-conflicts'
 
-checkForConflicts = ->
+checkForConflicts = (repo) ->
   workingDirectory = repo.getWorkingDirectory()
   head = repo.getShortHead()
 
-  cmd = "git merge-tree `git merge-base master #{head}` #{head} master"
+  if head == DEFAULT_BRANCH
+    return
+
+  cmd = "git merge-tree `git merge-base #{DEFAULT_BRANCH} #{head}` #{head} #{DEFAULT_BRANCH}"
   opt = cwd: workingDirectory
   exec cmd, opt, (error, stdout, stderr) ->
     if error?
