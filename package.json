@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "nodegit": "0.2.3",
-     "git-utils": "^2.1.5"
+    "git-utils": "^2.1.5",
+    "git-merge-parser": "0.0.2"
   }
 }
